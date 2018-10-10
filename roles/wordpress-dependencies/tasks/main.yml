@@ -52,7 +52,9 @@
 
 - name: Copy db config file
   become: yes
-  copy:
+  template:
     src: .my.cnf
     dest: /root/.my.cnf
+    owner: root
+    group: root
     mode: "660"
