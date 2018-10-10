@@ -1,0 +1,57 @@
+---
+# tasks file for roles/wordpress-dependencies
+- name: Install dependencies for WordPress
+  become: yes
+  yum:
+    name: ['httpd', 'php', 'php-mysql', 'mariadb', 'mariadb-server', 'MySQL-python']
+    state: present
+
+- name: Ensure MariaDB is running
+  become: yes
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+#- name: Remove /root/.my.cnf file
+#  become: yes
+#  file:
+#    path: /root/.my.cnf
+#    state: absent
+
+- name: Create database
+  become: yes
+  mysql_db:
+    name: "{{ wordpress_db_name }}"
+    state: present
+
+- name: Check if file /root/.my.cnf exists
+  become: yes
+  stat:
+    path: /root/.my.cnf
+  register: my_cnf_exists
+
+- name: Create database user and password without using password
+  mysql_user:
+    login_user: root
+#    login_password: ansible
+    name: "{{ wordpress_db_user }}"
+    password: "{{ wordpress_db_pwd }}"
+    priv: "*.*:ALL"
+  when: my_cnf_exists.stat.exists == False
+
+- name: Create database user and password USING password
+  mysql_user:
+#    assume those two are in .my.cnf
+    login_user: root
+    login_password: ansible
+    name: "{{ wordpress_db_user }}"
+    password: "{{ wordpress_db_pwd }}"
+    priv: "*.*:ALL"
+  when: my_cnf_exists.stat.exists == True
+
+- name: Copy db config file
+  become: yes
+  copy:
+    src: .my.cnf
+    dest: /root/.my.cnf
