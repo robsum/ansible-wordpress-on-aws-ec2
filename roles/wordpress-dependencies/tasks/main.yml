@@ -55,3 +55,4 @@
   copy:
     src: .my.cnf
     dest: /root/.my.cnf
+    mode: "660"
