@@ -1,0 +1,8 @@
+- name: Install WordPress
+#  hosts: local
+  hosts: targets
+
+  roles:
+    - wordpress-dependencies
+    - wordpress
+
